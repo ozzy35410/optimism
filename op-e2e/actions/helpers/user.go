@@ -423,7 +423,7 @@ func (s *CrossLayerUser) Address() common.Address {
 	return s.L1.address
 }
 
-func (s *CrossLayerUser) GetLatestDepositL2Receipt(t Testing) (*types.Receipt, error) {
+func (s *CrossLayerUser) GetLastDepositL2Receipt(t Testing) (*types.Receipt, error) {
 	depositL1Receipt := s.L1.CheckReceipt(t, true, s.lastL1DepositTxHash)
 	reconstructedDep, err := derive.UnmarshalDepositLogEvent(depositL1Receipt.Logs[0])
 	require.NoError(t, err, "Could not reconstruct L2 Deposit")
@@ -431,7 +431,7 @@ func (s *CrossLayerUser) GetLatestDepositL2Receipt(t Testing) (*types.Receipt, e
 	return s.L2.CheckReceipt(t, true, l2Tx.Hash()), nil
 }
 
-func (s *CrossLayerUser) getLatestWithdrawalParams(t Testing) (*withdrawals.ProvenWithdrawalParameters, error) {
+func (s *CrossLayerUser) getLastWithdrawalParams(t Testing) (*withdrawals.ProvenWithdrawalParameters, error) {
 	receipt := s.L2.CheckReceipt(t, true, s.lastL2WithdrawalTxHash)
 	l2WithdrawalBlock, err := s.L2.env.EthCl.BlockByNumber(t.Ctx(), receipt.BlockNumber)
 	require.NoError(t, err)
@@ -508,7 +508,7 @@ func (s *CrossLayerUser) ActProveWithdrawal(t Testing) {
 
 // ProveWithdrawal creates a L1 proveWithdrawal tx for the given L2 withdrawal tx, returning the tx hash.
 func (s *CrossLayerUser) ProveWithdrawal(t Testing, l2TxHash common.Hash) common.Hash {
-	params, err := s.getLatestWithdrawalParams(t)
+	params, err := s.getLastWithdrawalParams(t)
 	if err != nil {
 		t.InvalidAction("cannot prove withdrawal: %v", err)
 		return common.Hash{}
@@ -547,7 +547,7 @@ func (s *CrossLayerUser) ActCompleteWithdrawal(t Testing) {
 // CompleteWithdrawal creates a L1 withdrawal finalization tx for the given L2 withdrawal tx, returning the tx hash.
 // It's an invalid action to attempt to complete a withdrawal that has not passed the L1 finalization period yet
 func (s *CrossLayerUser) CompleteWithdrawal(t Testing, l2TxHash common.Hash) common.Hash {
-	params, err := s.getLatestWithdrawalParams(t)
+	params, err := s.getLastWithdrawalParams(t)
 	if err != nil {
 		t.InvalidAction("cannot complete withdrawal: %v", err)
 		return common.Hash{}
@@ -580,7 +580,7 @@ func (s *CrossLayerUser) ActResolveClaim(t Testing) {
 
 // ResolveClaim creates a L1 resolveClaim tx for the given L2 withdrawal tx, returning the tx hash.
 func (s *CrossLayerUser) ResolveClaim(t Testing, l2TxHash common.Hash) common.Hash {
-	params, err := s.getLatestWithdrawalParams(t)
+	params, err := s.getLastWithdrawalParams(t)
 	if err != nil {
 		t.InvalidAction("cannot resolve claim: %v", err)
 		return common.Hash{}
@@ -618,7 +618,7 @@ func (s *CrossLayerUser) ActResolve(t Testing) {
 
 // Resolve creates a L1 resolve tx for the given L2 withdrawal tx, returning the tx hash.
 func (s *CrossLayerUser) Resolve(t Testing, l2TxHash common.Hash) common.Hash {
-	params, err := s.getLatestWithdrawalParams(t)
+	params, err := s.getLastWithdrawalParams(t)
 	if err != nil {
 		t.InvalidAction("cannot resolve game: %v", err)
 		return common.Hash{}
