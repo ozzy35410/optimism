@@ -495,6 +495,8 @@ func (d *Sequencer) startBuildingBlock() {
 	// Figure out which L1 origin block we're going to be building on top of.
 	l1Origin, err := d.l1OriginSelector.FindL1Origin(ctx, l2Head, recoverMode)
 	if err != nil {
+		d.nextAction = d.timeNow().Add(time.Second)
+		d.nextActionOK = d.active.Load()
 		d.log.Error("Error finding next L1 Origin", "err", err)
 		d.emitter.Emit(rollup.L1TemporaryErrorEvent{Err: err})
 		return
@@ -681,6 +683,16 @@ func (d *Sequencer) Stop(ctx context.Context) (common.Hash, error) {
 
 	// ensure latestHead has been updated to the latest sealed/gossiped block before stopping the sequencer
 	for d.latestHead.Hash != d.latestSealed.Hash {
+
+		// if we are not the leader, latestSealed will never be updated and we will wait forever
+		if isLeader, err := d.conductor.Leader(ctx); err != nil {
+			d.log.Warn("Could not determine leadership while stopping. Skipping wait.", "err", err)
+			break
+		} else if !isLeader {
+			d.log.Info("Not leader anymore, skipping head sync wait")
+			break
+		}
+
 		latestHeadSet := make(chan struct{})
 		d.latestHeadSet = latestHeadSet
 		d.l.Unlock()
