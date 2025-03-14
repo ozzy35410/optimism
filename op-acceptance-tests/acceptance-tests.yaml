@@ -8,8 +8,17 @@ gates:
   - id: localnet
     description: "Localnet validation gate"
     tests:
-      - name: TestFindRPCEndpoints
-        package: github.com/ethereum-optimism/optimism/kurtosis-devnet/pkg/kurtosis/api/run
+      - package: github.com/ethereum-optimism/optimism/op-acceptance-tests/tests/interop
+      - package: github.com/ethereum-optimism/optimism/op-acceptance-tests/tests/isthmus
+      - package: github.com/ethereum-optimism/optimism/op-acceptance-tests/tests/fjord
+  - id: isthmus
+    description: "Isthmus validation gate"
+    tests:
+      - package: github.com/ethereum-optimism/optimism/op-acceptance-tests/tests/isthmus
+      - package: github.com/ethereum-optimism/optimism/op-acceptance-tests/tests/fjord
+  - id: interop
+    description: "Interop validation gate"
+    tests:
       - package: github.com/ethereum-optimism/optimism/op-acceptance-tests/tests/interop
       - package: github.com/ethereum-optimism/optimism/op-acceptance-tests/tests/isthmus
       - package: github.com/ethereum-optimism/optimism/op-acceptance-tests/tests/fjord
